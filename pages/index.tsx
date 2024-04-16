@@ -8,27 +8,29 @@ export default function Home() {
     e.preventDefault();
     if (e.target.files) {
       const file = e.target.files[0];
-      handleUpload(file);
+      await handleUpload(file);
     }
   };
-
   const handleUpload = async (file: File) => {
-    const response = await fetch("/api/upload", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      const response = await fetch("/api/upload", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    const { accessUrl, signedUrl } = await response.json();
-    // console.log("accessUrl:", accessUrl, "signedUrl:", signedUrl);
+      const { accessUrl, signedUrl } = await response.json();
+      await axios.put(signedUrl, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
 
-    const uploadResponse = axios.put(signedUrl, file, {
-      headers: {
-        "Content-Type": file.type,
-      },
-    });
-    setSelectedFile(accessUrl);
+      return accessUrl;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
